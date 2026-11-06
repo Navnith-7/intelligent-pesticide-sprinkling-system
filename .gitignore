@@ -1,0 +1,48 @@
+﻿# Python environments
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Datasets
+data/raw/*
+data/processed/*
+data/external/*
+
+# Keep placeholder files in empty data folders
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/external/.gitkeep
+
+# Trained models and checkpoints
+models/*
+!models/.gitkeep
+*.pth
+*.pt
+*.ckpt
+*.onnx
+
+# Experiment outputs
+reports/results/*
+reports/figures/*
+runs/
+wandb/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
+# IDE and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
