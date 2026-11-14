@@ -46,3 +46,6 @@ wandb/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Archived local experiments
+experiments/archive/
