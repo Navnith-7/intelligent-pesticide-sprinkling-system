@@ -1,0 +1,12 @@
+variation,actual_class,predicted_class,top1_confidence,top2_class,top2_confidence,top3_class,top3_confidence,correct,brightness,contrast,sharpness,inference_ms
+original,"Pepper,_bell___healthy","Pepper,_bell___healthy",0.99992,"Pepper,_bell___Bacterial_spot",8e-05,Soybean___healthy,0.0,True,123.7,44.55,6470.58,2496.27
+motion_blur,"Pepper,_bell___healthy",Cherry_(including_sour)___Powdery_mildew,0.99299,"Pepper,_bell___healthy",0.00508,Soybean___healthy,0.00145,False,123.69,38.97,283.98,18.93
+partial_shadow,"Pepper,_bell___healthy","Pepper,_bell___healthy",0.99987,"Pepper,_bell___Bacterial_spot",0.00012,Soybean___healthy,1e-05,True,133.27,45.3,6455.82,17.6
+warm_light,"Pepper,_bell___healthy","Pepper,_bell___healthy",0.97583,Orange___Haunglongbing_(Citrus_greening),0.01208,"Pepper,_bell___Bacterial_spot",0.01199,True,127.47,45.99,6881.0,14.73
+cool_light,"Pepper,_bell___healthy","Pepper,_bell___healthy",1.0,Soybean___healthy,0.0,"Pepper,_bell___Bacterial_spot",0.0,True,120.35,43.17,6139.38,28.83
+low_light_noise,"Pepper,_bell___healthy","Pepper,_bell___Bacterial_spot",0.5211,"Pepper,_bell___healthy",0.33514,Cherry_(including_sour)___Powdery_mildew,0.03384,False,49.07,18.91,1922.26,18.51
+perspective,"Pepper,_bell___healthy","Pepper,_bell___healthy",0.98503,"Pepper,_bell___Bacterial_spot",0.01426,Orange___Haunglongbing_(Citrus_greening),0.00069,True,99.34,59.61,2018.74,20.1
+partial_occlusion,"Pepper,_bell___healthy","Pepper,_bell___healthy",0.99998,"Pepper,_bell___Bacterial_spot",1e-05,Soybean___healthy,0.0,True,121.31,43.28,5665.91,20.23
+glare,"Pepper,_bell___healthy","Pepper,_bell___healthy",0.99998,"Pepper,_bell___Bacterial_spot",2e-05,Orange___Haunglongbing_(Citrus_greening),0.0,True,131.9,48.35,6455.16,17.97
+low_resolution,"Pepper,_bell___healthy",Potato___Late_blight,0.77331,Cherry_(including_sour)___Powdery_mildew,0.12368,Soybean___healthy,0.04462,False,123.55,38.63,22.77,20.01
+jpeg_compression,"Pepper,_bell___healthy",Soybean___healthy,0.49501,"Pepper,_bell___healthy",0.33363,Cherry_(including_sour)___Powdery_mildew,0.10335,False,123.75,43.49,2745.55,18.08
