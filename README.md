@@ -1,3 +1,5 @@
+
+
 # Intelligent Pesticide Sprinkling System Using CNN
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
@@ -10,6 +12,28 @@
 An end-to-end computer vision and embedded hardware actuation system for real-time plant disease recognition and targeted pesticide spraying. Built with **PyTorch**, **OpenCV**, and an **Arduino Uno serial relay controller**, this project progresses systematically from a custom 4-block CNN baseline to a **3-stage domain-robust MobileNetV2** paired with the **V4 Spatial ROI & LAB Highlight-Recovery Vision Pipeline**.
 
 ---
+## Live System Demos
+
+### 1. End-to-End Hardware Actuation Demo (Arduino Uno + Relay + Water Pump on `COM6`)
+
+
+
+
+
+https://github.com/user-attachments/assets/464b7ec5-434d-4a9f-9c90-0df534bf94f5
+
+
+### 2. V4 Vision Pipeline & State Machine Deep-Dive (`11-17 ms` CUDA Inference)
+
+
+
+
+
+
+https://github.com/user-attachments/assets/a3c0abf9-e1af-4786-a0a8-c04ff95a3dbc
+
+
+
 
 ## Key Engineering Highlights
 
