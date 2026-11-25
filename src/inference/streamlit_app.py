@@ -1,5 +1,5 @@
-﻿"""
-Precision Foliar Sprayer â€” Real-Time Vision & Hardware Control Console
+"""
+Precision Foliar Sprayer — Real-Time Vision & Hardware Control Console
 Domain-Robust MobileNetV2 + OpenCV V4 ROI/LAB Optics + Arduino Uno Relay Controller
 """
 
@@ -521,7 +521,7 @@ def render_telemetry_html(
         pct = min(100.0, max(0.0, ((total - rem) / total) * 100.0))
         state_cls = "state-spraying"
         state_val = f"SPRAYING  {rem:.2f}s"
-        state_sub = f"Pulse {sm.active_pulse_sec:.1f}s Â· Valve OPEN"
+        state_sub = f"Pulse {sm.active_pulse_sec:.1f}s · Valve OPEN"
         bar_html = f'<div class="progress-track"><div class="progress-fill" style="width:{pct:.1f}%;background:#f85149;"></div></div>'
     elif sm.state == "COOLDOWN":
         rem = max(0.0, sm.state_until - now)
@@ -529,7 +529,7 @@ def render_telemetry_html(
         pct = min(100.0, max(0.0, ((total - rem) / total) * 100.0))
         state_cls = "state-cooldown"
         state_val = f"COOLDOWN  {rem:.2f}s"
-        state_sub = f"Lockout {sm.cooldown_seconds:.1f}s Â· Valve CLOSED"
+        state_sub = f"Lockout {sm.cooldown_seconds:.1f}s · Valve CLOSED"
         bar_html = f'<div class="progress-track"><div class="progress-fill" style="width:{pct:.1f}%;background:#d29922;"></div></div>'
     elif sm.state == "MAX_REACHED":
         state_cls = "state-locked"
@@ -550,14 +550,14 @@ def render_telemetry_html(
         dur_sub = "Idle"
     elif is_diseased:
         det_val = html.escape(rec["disease"])
-        det_sub = f"{diseased_prob * 100:.1f}% Â· {frame_ms:.1f} ms"
+        det_sub = f"{diseased_prob * 100:.1f}% · {frame_ms:.1f} ms"
         dur_val = f"{pulse_to_use:.1f} s"
         dur_sub = f"Severity {sev['severity_pct']}% ({sev['severity_grade'].split()[0]})"
     else:
         det_val = f"{html.escape(rec['crop'])} (Healthy)"
-        det_sub = f"{healthy_prob * 100:.1f}% Â· {frame_ms:.1f} ms"
+        det_sub = f"{healthy_prob * 100:.1f}% · {frame_ms:.1f} ms"
         dur_val = "0.0 s"
-        dur_sub = "Healthy â€” skipped"
+        dur_sub = "Healthy — skipped"
 
     return f"""
     <div class="telemetry-grid">
@@ -622,7 +622,7 @@ def render_prescription_html(
     if is_diseased:
         if sm.state == "MAX_REACHED":
             pill = f'<span class="pill pill-blue">Cap Locked {sm.leaf_spray_count}/{sm.max_sprays_per_leaf}</span>'
-            cap_text = f"Limit reached ({sm.leaf_spray_count}/{sm.max_sprays_per_leaf}) â€” remove leaf for 1.0s to reset"
+            cap_text = f"Limit reached ({sm.leaf_spray_count}/{sm.max_sprays_per_leaf}) — remove leaf for 1.0s to reset"
         elif sm.state == "SPRAYING":
             pill = '<span class="pill pill-red">Spraying Active</span>'
             cap_text = f"Executing pulse {sm.leaf_spray_count}/{sm.max_sprays_per_leaf}"
@@ -630,13 +630,13 @@ def render_prescription_html(
             pill = '<span class="pill pill-muted">Cooldown Lockout</span>'
             cap_text = f"{sm.leaf_spray_count}/{sm.max_sprays_per_leaf} pulses applied"
         else:
-            pill = f'<span class="pill pill-red">Diseased Â· {diseased_prob * 100:.1f}%</span>'
+            pill = f'<span class="pill pill-red">Diseased · {diseased_prob * 100:.1f}%</span>'
             cap_text = f"Armed ({sm.leaf_spray_count}/{sm.max_sprays_per_leaf} pulses used)"
 
         return f"""
         <div class="rx-panel diseased">
             <div class="rx-header">
-                <div class="rx-title">{html.escape(rec['crop'])} â€” {html.escape(rec['disease'])}</div>
+                <div class="rx-title">{html.escape(rec['crop'])} — {html.escape(rec['disease'])}</div>
                 {pill}
             </div>
             <div class="kv-grid">
@@ -649,7 +649,7 @@ def render_prescription_html(
                 <div class="kv-k">Mixing Dosage</div>
                 <div class="kv-v mono">{html.escape(rec['dosage'])}</div>
                 <div class="kv-k">Pulse / Volume</div>
-                <div class="kv-v mono">{pulse_to_use:.1f}s (~{vol_to_use:.1f} mL) Â· {sev['severity_pct']}% {html.escape(sev['severity_grade'])}</div>
+                <div class="kv-v mono">{pulse_to_use:.1f}s (~{vol_to_use:.1f} mL) · {sev['severity_pct']}% {html.escape(sev['severity_grade'])}</div>
                 <div class="kv-k">Leaf Cap Guard</div>
                 <div class="kv-v">{cap_text}</div>
                 <div class="kv-k">Hardware Link</div>
@@ -661,8 +661,8 @@ def render_prescription_html(
     return f"""
     <div class="rx-panel healthy">
         <div class="rx-header">
-            <div class="rx-title">{html.escape(rec['crop'])} â€” Healthy Foliage</div>
-            <span class="pill pill-green">Healthy Â· {healthy_prob * 100:.1f}%</span>
+            <div class="rx-title">{html.escape(rec['crop'])} — Healthy Foliage</div>
+            <span class="pill pill-green">Healthy · {healthy_prob * 100:.1f}%</span>
         </div>
         <div class="kv-grid">
             <div class="kv-k">Treatment</div>
@@ -1164,7 +1164,7 @@ def main():
             )
             i3.image(
                 encode_jpeg(lesion_overlay, 90),
-                caption=f"3. Lesion Segmentation ({sev['severity_pct']}% â€” {sev['severity_grade']})",
+                caption=f"3. Lesion Segmentation ({sev['severity_pct']}% — {sev['severity_grade']})",
                 width="stretch",
             )
 
@@ -1215,7 +1215,7 @@ def main():
                 </div>
                 <div class="t-card">
                     <div class="t-label">Live CUDA Latency</div>
-                    <div class="t-value">9.9â€“17.3 ms</div>
+                    <div class="t-value">9.9–17.3 ms</div>
                     <div class="t-sub">54,305 SHA-256 audited imgs</div>
                 </div>
             </div>
@@ -1227,7 +1227,7 @@ def main():
         prog_df = pd.DataFrame(
             [
                 ["best_cnn.pth", "Custom 4-Block CNN (~422k params)", "1.73 MB", "14 / 19", "0.0763", "97.64%", "0.9685", "97.40% (212 err)"],
-                ["best_mobilenet_v2.pth", "Stage-1: Frozen Backbone + Head (LR=1e-3)", "9.34 MB", "11 / 16", "0.0822", "97.35%", "0.9653", "â€”"],
+                ["best_mobilenet_v2.pth", "Stage-1: Frozen Backbone + Head (LR=1e-3)", "9.34 MB", "11 / 16", "0.0822", "97.35%", "0.9653", "—"],
                 ["best_mobilenet_v2_finetuned.pth", "Stage-2: features[-2:] + Head (LR=1e-5/1e-4)", "9.35 MB", "9 / 12", "0.0485", "98.43%", "0.9789", "98.49% (123 err)"],
                 ["best_mobilenet_v2_robust.pth (Selected)", "Stage-3: Full Net (2.27M, LR=1e-5) + Robust Aug", "9.35 MB", "9 / 10", "0.0193", "99.37%", "0.9925", "Held-out untouched"],
             ],
