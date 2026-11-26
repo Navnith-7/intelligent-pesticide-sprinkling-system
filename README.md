@@ -24,14 +24,14 @@ An end-to-end **computer vision, precision agronomy, and embedded hardware actua
 https://github.com/user-attachments/assets/464b7ec5-434d-4a9f-9c90-0df534bf94f5
 
 
-### 2. V4 Vision Pipeline & State Machine Deep-Dive (`11-17 ms` CUDA Inference)
+### 2. V5 Streamlit Control Console & 2-Spray Leaf Cap
 
 
 
 
+https://github.com/user-attachments/assets/cc8bf4f7-4ea2-4e01-91cf-e7933b6d1dd9
 
 
-https://github.com/user-attachments/assets/a3c0abf9-e1af-4786-a0a8-c04ff95a3dbc
 
 ---
 
