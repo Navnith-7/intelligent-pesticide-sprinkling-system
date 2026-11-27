@@ -2,8 +2,18 @@
 38-Class Pesticide Prescription Engine & OpenCV Lesion Severity Estimator.
 Computes:
   1. Disease-specific pesticide, active ingredient, pathogen type, and dosage/L.
-  2. Foliar lesion severity (%) via HSV/LAB chlorophyll-vs-necrosis segmentation.
+  2. Foliar lesion severity (%) via HSV chlorophyll-vs-necrosis segmentation.
   3. Adaptive variable-rate spray pulse duration (1.0s Mild / 1.5s Moderate / 2.0s Severe).
+
+NOTES / LIMITATIONS (read before relying on any value in this module):
+  * PESTICIDE_DB is a SIMULATED lookup table for prototype demonstration. It is NOT
+    validated agronomic advice and cites no external sources.
+    [TODO: add agronomic sources for dosages before any real-world use]
+  * Lesion severity is an UNVALIDATED HSV colour-threshold heuristic (HSV only - no LAB;
+    not validated against expert labels; not meaningful for viral, mite or
+    citrus-greening classes).
+  * flow_rate_ml_per_sec = 12.0 is an ASSUMED, uncalibrated constant (never measured).
+  * The hardware prototype dispenses water, not chemical pesticides.
 """
 
 from typing import Any, Dict, Tuple
@@ -431,7 +441,7 @@ def estimate_leaf_severity_and_duration(
     flow_rate_ml_per_sec: float = 12.0,
 ) -> Tuple[Dict[str, Any], np.ndarray]:
     """
-    Estimate foliar lesion severity (%) on a 224x224 leaf ROI using HSV/LAB tissue ratios
+    Estimate foliar lesion severity (%) on a 224x224 leaf ROI using HSV tissue ratios
     and compute an adaptive variable-rate spray pulse duration (1.0s / 1.5s / 2.0s).
 
     Returns:
@@ -470,7 +480,7 @@ def estimate_leaf_severity_and_duration(
         leaf_mask = np.full(roi_bgr.shape[:2], 255, dtype=np.uint8)
 
     # Discolored / chlorotic / necrotic lesions inside leaf tissue:
-    # Yellow/orange/rust/brown hues (H: 5..30) OR dark necrotic spots (V < 75) inside leaf
+    # Yellow/orange/rust/brown hues (H: 5..30) OR dark necrotic spots (V < 78) inside leaf
     chlorotic_brown = (h_ch >= 5) & (h_ch <= 30) & (s_ch >= 35) & (leaf_mask > 0)
     dark_necrotic = (v_ch < 78) & (s_ch >= 25) & (leaf_mask > 0)
     lesion_mask = (chlorotic_brown | dark_necrotic).astype(np.uint8) * 255
@@ -490,7 +500,7 @@ def estimate_leaf_severity_and_duration(
         grade = "Severe Infection"
         pulse_sec = 2.0
 
-    # Render translucent red-amber lesion overlay for recruiter/viva visual inspection
+    # Render translucent red-amber lesion overlay for visual inspection
     red_layer = np.zeros_like(roi_bgr)
     red_layer[:, :] = (0, 60, 255)  # BGR orange-red
     mask_bool = lesion_mask > 0

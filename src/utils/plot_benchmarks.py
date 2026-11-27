@@ -26,7 +26,7 @@ def pick_col(df: pd.DataFrame, candidates: list[str]) -> str:
 
 def plot_model_progression() -> Path:
     stages = [
-        "Stage 0\nCustom 4-Block CNN\n(422k params)",
+        "Stage 0\nCustom 4-Block CNN\n(427k params)",
         "Stage 1\nMobileNetV2\nHead Only",
         "Stage 2\nMobileNetV2\nPartial Fine-Tune",
         "Stage 3 (Best)\nDomain-Robust\nMobileNetV2",
@@ -42,7 +42,7 @@ def plot_model_progression() -> Path:
     b2 = ax.bar(x + width / 2, val_f1, width, label="Validation Macro-F1 (×100)", color="#2E7D32", edgecolor="#1B5E20")
 
     ax.set_ylabel("Score (%)", fontweight="bold")
-    ax.set_title("4-Stage Architecture & Transfer Learning Progression (8,146 Leak-Free Val Images)", fontweight="bold")
+    ax.set_title("4-Stage Architecture & Transfer Learning Progression (8,146 Validation Images)", fontweight="bold")
     ax.set_xticks(x)
     ax.set_xticklabels(stages, fontsize=9, fontweight="bold")
     ax.set_ylim(94.0, 100.8)

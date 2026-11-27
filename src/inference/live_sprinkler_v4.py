@@ -5,7 +5,7 @@ VISION (imported unchanged from src.inference.live_predict_v4 - nothing is
 re-implemented, so behaviour cannot drift):
     best_mobilenet_v2_robust.pth, Mode A/B ('m'), LAB L-gamma + CLAHE glare
     recovery ('c'), white balance OFF by default ('w'), top-10% watermark
-    exclusion, 5% minimum leaf area guardrail, 5-frame EMA smoothing.
+    exclusion, 5% minimum leaf area guardrail, recursive IIR EMA (0.6/0.4) smoothing.
 
 HARDWARE (protocol copied from src/inference/automated_sprinkler.py and
 src/hardware/test_relay.py - neither file is modified):

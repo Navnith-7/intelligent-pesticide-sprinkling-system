@@ -1,4 +1,4 @@
-﻿torch
+torch
 torchvision
 opencv-python
 scikit-learn
@@ -7,3 +7,6 @@ pandas
 pyserial
 tqdm
 streamlit
+Pillow
+numpy
+# pygrabber  # Optional: Windows DirectShow camera listing in src/inference/camera_test.py

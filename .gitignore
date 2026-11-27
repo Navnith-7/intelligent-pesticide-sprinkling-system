@@ -49,3 +49,11 @@ Thumbs.db
 
 # Archived local experiments
 experiments/archive/
+
+# Large media files
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.gif
+*.zip

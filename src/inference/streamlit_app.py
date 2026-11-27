@@ -405,6 +405,7 @@ class LeafBoundedSprayStateMachine:
         self.healthy_frames_skipped = 0
         self.diseased_frames_seen = 0
         self.total_ml_dispensed = 0.0
+        self.pump_faulted = False
 
     def reset_for_new_leaf(self) -> None:
         self.state = "STANDBY"
@@ -445,10 +446,20 @@ class LeafBoundedSprayStateMachine:
         pesticide_name: str,
         pulse_sec: float,
         est_volume_ml: float,
+        pump_faulted: bool = False,
     ) -> str:
-        """Advance state machine one inference step. Returns 'NONE', 'TURN_ON', or 'TURN_OFF'."""
+        """Advance state machine one inference step. Returns 'NONE', 'TURN_ON', or 'TURN_OFF'.
+
+        If pump_faulted is True (serial write failed) the machine refuses to start a spray,
+        clears its confirmation counter and records nothing as a spray.
+        """
+        self.pump_faulted = bool(pump_faulted)
         if self.state in ("SPRAYING", "COOLDOWN"):
             return self.tick_timers(now)
+
+        if self.pump_faulted:
+            self.confirm_count = 0
+            return "NONE"
 
         if leaf_valid:
             if diseased_prob >= self.disease_prob_threshold:
@@ -515,7 +526,12 @@ def render_telemetry_html(
     pulse_to_use: float,
     sev: dict,
 ) -> str:
-    if sm.state == "SPRAYING":
+    if getattr(sm, "pump_faulted", False) and sm.state not in ("SPRAYING", "COOLDOWN"):
+        state_cls = "state-spraying"
+        state_val = "SERIAL FAULT"
+        state_sub = "Spraying disabled - check Arduino link"
+        bar_html = '<div class="progress-track"><div class="progress-fill" style="width:100%;background:#f85149;"></div></div>'
+    elif sm.state == "SPRAYING":
         rem = max(0.0, sm.state_until - now)
         total = max(sm.active_pulse_sec, 0.1)
         pct = min(100.0, max(0.0, ((total - rem) / total) * 100.0))
@@ -801,6 +817,10 @@ def main():
                 unsafe_allow_html=True,
             )
 
+        st.caption(
+            "Note: the lesion-severity overlay is an unvalidated HSV colour-threshold heuristic, and "
+            "the displayed volume uses an assumed, uncalibrated 12.0 mL/s flow rate."
+        )
         error_banner = st.empty()
         telemetry_placeholder = st.empty()
 
@@ -968,6 +988,7 @@ def main():
                             pesticide_name=rec["pesticide"],
                             pulse_sec=pulse_to_use,
                             est_volume_ml=vol_to_use,
+                            pump_faulted=pump.fault,
                         )
 
                         # Save latest valid snapshot for smooth timer fast-path
@@ -987,20 +1008,21 @@ def main():
                             pump.turn_on(
                                 f"{sm.trigger_label} | Spray {sm.leaf_spray_count}/{sm.max_sprays_per_leaf} ({sm.active_pulse_sec:.1f}s)"
                             )
-                            st.session_state.spray_log.insert(
-                                0,
-                                {
-                                    "Time": datetime.now().strftime("%H:%M:%S"),
-                                    "Disease": sm.trigger_label,
-                                    "Conf.": f"{diseased_prob * 100:.1f}%",
-                                    "Severity": f"{sev['severity_pct']}% ({sev['severity_grade'].split()[0]})",
-                                    "Pesticide": rec["pesticide"],
-                                    "Dosage": rec["dosage"],
-                                    "Pulse": f"{sm.active_pulse_sec:.1f}s",
-                                    "Cap": f"{sm.leaf_spray_count}/{sm.max_sprays_per_leaf}",
-                                    "Mode": pump.status_text,
-                                },
-                            )
+                            if not pump.fault:
+                                st.session_state.spray_log.insert(
+                                    0,
+                                    {
+                                        "Time": datetime.now().strftime("%H:%M:%S"),
+                                        "Disease": sm.trigger_label,
+                                        "Conf.": f"{diseased_prob * 100:.1f}%",
+                                        "Severity": f"{sev['severity_pct']}% ({sev['severity_grade'].split()[0]})",
+                                        "Pesticide": rec["pesticide"],
+                                        "Dosage": rec["dosage"],
+                                        "Pulse": f"{sm.active_pulse_sec:.1f}s",
+                                        "Cap": f"{sm.leaf_spray_count}/{sm.max_sprays_per_leaf}",
+                                        "Mode": pump.status_text,
+                                    },
+                                )
 
                         hud_lines = list(info["lines"])
                         hud_color = v4.WHITE if sm.state == "MAX_REACHED" else v4.GREEN
@@ -1119,6 +1141,9 @@ def main():
     # =========================================================================
     with tab_upload:
         st.markdown('<div class="section-label">Offline Leaf Diagnostic &amp; Prescription Test</div>', unsafe_allow_html=True)
+        st.caption(
+            "Severity overlay = unvalidated HSV colour heuristic; volume assumes an uncalibrated 12.0 mL/s flow rate."
+        )
         uploaded = st.file_uploader("Upload a leaf image (JPG, PNG, BMP)", type=["jpg", "jpeg", "png", "bmp"])
         if uploaded is not None:
             pil_img = Image.open(uploaded).convert("RGB")
@@ -1214,9 +1239,9 @@ def main():
                     <div class="t-sub">41.05% &rarr; 94.21% (n=190)</div>
                 </div>
                 <div class="t-card">
-                    <div class="t-label">Live CUDA Latency</div>
-                    <div class="t-value">9.9–17.3 ms</div>
-                    <div class="t-sub">54,305 SHA-256 audited imgs</div>
+                    <div class="t-label">Stage-3 CUDA Latency</div>
+                    <div class="t-value">19.4 ms / 29.4 ms</div>
+                    <div class="t-sub">Fwd med (27.4 p95) · Full med (43.2 p95)</div>
                 </div>
             </div>
             """,
@@ -1226,10 +1251,10 @@ def main():
         st.markdown("#### 1. Four-Stage Model Progression")
         prog_df = pd.DataFrame(
             [
-                ["best_cnn.pth", "Custom 4-Block CNN (~422k params)", "1.73 MB", "14 / 19", "0.0763", "97.64%", "0.9685", "97.40% (212 err)"],
+                ["best_cnn.pth", "Custom 4-Block CNN (427,174 params)", "1.73 MB", "14 / 19", "0.0763", "97.64%", "0.9685", "97.40% (212 err)"],
                 ["best_mobilenet_v2.pth", "Stage-1: Frozen Backbone + Head (LR=1e-3)", "9.34 MB", "11 / 16", "0.0822", "97.35%", "0.9653", "—"],
                 ["best_mobilenet_v2_finetuned.pth", "Stage-2: features[-2:] + Head (LR=1e-5/1e-4)", "9.35 MB", "9 / 12", "0.0485", "98.43%", "0.9789", "98.49% (123 err)"],
-                ["best_mobilenet_v2_robust.pth (Selected)", "Stage-3: Full Net (2.27M, LR=1e-5) + Robust Aug", "9.35 MB", "9 / 10", "0.0193", "99.37%", "0.9925", "Held-out untouched"],
+                ["best_mobilenet_v2_robust.pth (Selected)", "Stage-3: Full Net (2.27M, LR=1e-5) + Robust Aug", "9.35 MB", "9 / 10", "0.0193", "99.37%", "0.9925", "99.37% (51 err)"],
             ],
             columns=["Checkpoint", "Strategy", "Size", "Best Epoch", "Val Loss", "Val Acc", "Val F1", "Test Acc"],
         )
@@ -1256,12 +1281,12 @@ def main():
         st.markdown("#### 4. Method Ablation: V1 Baseline vs. V4/V5 Production")
         ablation_df = pd.DataFrame(
             [
-                ["Dataset Split", "Random split (21 duplicate pairs leak)", "SHA-256 hash-grouped 70/15/15 split (0 leakage)"],
+                ["Dataset Split", "Random split (21 exact duplicate pairs can leak)", "Exact SHA-256 duplicates grouped (near-duplicates not checked)"],
                 ["Spatial Framing", "Full uncropped 640x480 webcam frame", "Top-10% watermark mask + HSV ROI (4% pad, >=5% area)"],
                 ["Exposure & Glare", "Raw RGB (specular glare bleaches lesions)", "Conditional LAB L-channel Gamma(1.45) + CLAHE(1.5)"],
-                ["Temporal Filter", "Single-frame raw softmax", "5-frame EMA (0.6/0.4) + 3-frame confirmation (>=70%)"],
-                ["Actuation Safety", "Fixed pulse, unlimited sprays per leaf", "Adaptive pulse (1.0/1.5/2.0s) + 2-spray cap & 1.0s reset"],
-                ["Agronomy Layer", "Disease class label only", "38-class pesticide, active ingredient, dosage & CSV log"],
+                ["Temporal Filter", "3 consecutive identical frames (>=90%)", "Recursive IIR EMA (0.6/0.4) + 3-frame confirmation (>=70%)"],
+                ["Actuation Safety", "Fixed 1.5s pulse, 10.0s cooldown, 1-spray latch", "Streamlit: adaptive pulse (1.0/1.5/2.0s) + 2-spray cap & 1.0s reset (CLI: fixed 1.5s, no cap)"],
+                ["Agronomy Layer", "Disease class label only", "Simulated 38-class lookup (not agronomic advice) & CSV log"],
             ],
             columns=["Dimension", "V1 Baseline", "V4/V5 Production"],
         )
@@ -1277,6 +1302,11 @@ def main():
     # =========================================================================
     with tab_formulary:
         st.markdown('<div class="section-label">38-Class Crop Pathology &amp; Chemical Formulary</div>', unsafe_allow_html=True)
+        st.caption(
+            "Simulated lookup table for prototype demonstration - not validated agronomic advice; "
+            "no external sources are cited. [TODO: add agronomic sources for dosages]. "
+            "The hardware prototype dispenses water, not chemical pesticides."
+        )
         search_q = st.text_input("Filter by crop, disease, pathogen, or active ingredient", placeholder="e.g., Apple, Blight, Copper, Tomato")
         rows = [
             {

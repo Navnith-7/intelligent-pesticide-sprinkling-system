@@ -1,13 +1,22 @@
-﻿/*
+/*
  * Intelligent Pesticide Sprinkling System - Arduino Uno Relay Controller
  * Serial Protocol: 9600 Baud, 8N1
  * Commands:
  *   '1' -> Activate Relay (Water Pump ON)
  *   '0' -> Deactivate Relay (Water Pump OFF - Fail-Safe Default)
+ *
+ * Hardware watchdog: if the relay stays ON longer than MAX_ON_MS without a '0'
+ * (host crash, USB disconnect mid-pulse), the sketch switches it OFF by itself.
+ * A repeated '1' while the relay is already ON does NOT extend the timer.
  */
 
 const int RELAY_PIN = 7;       // Digital pin connected to Relay IN1
 const bool ACTIVE_LOW = true;  // Most 2-channel opto-isolated relays trigger on LOW
+
+const unsigned long MAX_ON_MS = 3000UL;  // Maximum continuous ON time (watchdog)
+
+bool relayOn = false;
+unsigned long relayOnSince = 0;
 
 void setRelay(bool turnOn) {
   if (ACTIVE_LOW) {
@@ -15,6 +24,11 @@ void setRelay(bool turnOn) {
   } else {
     digitalWrite(RELAY_PIN, turnOn ? HIGH : LOW);
   }
+
+  if (turnOn && !relayOn) {
+    relayOnSince = millis();  // start of a new ON period
+  }
+  relayOn = turnOn;
 }
 
 void setup() {
@@ -31,5 +45,10 @@ void loop() {
     } else if (cmd == '0') {
       setRelay(false);
     }
+  }
+
+  // Non-blocking watchdog (unsigned subtraction is safe across millis() rollover).
+  if (relayOn && (millis() - relayOnSince >= MAX_ON_MS)) {
+    setRelay(false);
   }
 }
